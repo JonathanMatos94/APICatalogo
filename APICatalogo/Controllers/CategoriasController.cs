@@ -1,7 +1,6 @@
 ﻿using APICatalogo.Context;
 using APICatalogo.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -27,7 +26,6 @@ namespace APICatalogo.Controllers
         {
             return _context.Categorias.AsNoTracking().ToList();
         }
-
 
         // GET api/<CategoriasController>/5
         [HttpGet("{id}", Name = "ObterCategoria")]

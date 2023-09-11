@@ -1,7 +1,5 @@
-﻿using APICatalogo.Context;
 using APICatalogo.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace APICatalogo.Controllers;
 
@@ -14,7 +12,6 @@ public class ProdutosController : ControllerBase
     {
         _context = context;
     }
-
     [HttpGet]
     public ActionResult<IEnumerable<Produto>> Get()
     {
