@@ -1,5 +1,7 @@
-﻿using APICatalogo.Context;
+﻿using APICatalogo.DTOs;
 using APICatalogo.Models;
+using APICatalogo.Repository;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -10,70 +12,97 @@ namespace APICatalogo.Controllers
     [ApiController]
     public class CategoriasController : ControllerBase
     {
-        private readonly AppDbContext _context;
-        public CategoriasController(AppDbContext context)
+        private readonly IUnityOfWork _context;
+        private readonly IMapper _mapper;
+        public CategoriasController(IUnityOfWork context, IMapper mapper)
         {
             _context = context;
-        }
-        // GET: api/<CategoriasController>
-        [HttpGet("produtos")]
-        public ActionResult<IEnumerable<Categoria>> GetCategoriasProdutos()
-        {
-            return _context.Categorias.Include(x=> x.Produtos).AsNoTracking().ToList();
-        }
-        [HttpGet]
-        public ActionResult<IEnumerable<Categoria>> Get()
-        {
-            return _context.Categorias.AsNoTracking().ToList();
+            _mapper = mapper;
+          
         }
 
-        // GET api/<CategoriasController>/5
-        [HttpGet("{id}", Name = "ObterCategoria")]
-        public ActionResult<Categoria> Get(int id)
+        [HttpGet("produtos")]
+        public ActionResult<IEnumerable<CategoriaDTO>> GetCategoriasProdutos()
         {
-            var categoria = _context.Categorias.FirstOrDefault(c => c.CategoriaId == id);
+            
+            var categoriaProduto = _context.CategoriaRepository.GetCategoriasProdutos().ToList();
+
+            var categoriaProdutoDto = _mapper.Map<List<CategoriaDTO>>(categoriaProduto);
+
+            return categoriaProdutoDto;
+
+        }
+        [HttpGet]
+        public ActionResult<IEnumerable<CategoriaDTO>> Get()
+        {
+            var categorias = _context.CategoriaRepository.Get().ToList();
+
+            var categoriasDTO = _mapper.Map<List<CategoriaDTO>>(categorias);
+
+            return categoriasDTO;
+        }
+
+        // GET api/<CategoriasController>/id
+        [HttpGet("{id}", Name = "ObterCategoria")]
+        public ActionResult<CategoriaDTO> Get(int id)
+        {
+            var categoria = _context.CategoriaRepository.GetById(c => c.CategoriaId == id);
             if(categoria == null)
             { 
                 return BadRequest(); 
             }
-            return categoria;
+            var categoriaDto = _mapper.Map<CategoriaDTO>(categoria);
+            
+            return categoriaDto;
         }
 
         // POST api/<CategoriasController>
         [HttpPost]
-        public ActionResult<Categoria> Post([FromBody] Categoria categoria)
+        public ActionResult<CategoriaDTO> Post([FromBody] CategoriaDTO categoriaDtoReturn)
         {
-            _context.Categorias.Add(categoria);
-            _context.SaveChanges();
-            return new CreatedAtRouteResult("ObterCategoria", new { id = categoria.CategoriaId }, categoria);
+            var categoria = _mapper.Map<Categoria>(categoriaDtoReturn);
+
+            _context.CategoriaRepository.Add(categoria);
+            _context.Commit();
+
+            return new CreatedAtRouteResult("ObterCategoria", 
+                new { id = categoria.CategoriaId }, categoriaDtoReturn);
         }
 
         // PUT api/<CategoriasController>/5
         [HttpPut("{id}")]
-        public ActionResult<Categoria> Put(int id, [FromBody] Categoria categoria)
+        public ActionResult<Categoria> Put(int id, [FromBody] CategoriaDTO categoriaDto)
         {
-            if (id != categoria.CategoriaId)
+
+            if (id != categoriaDto.CategoriaId)
             {
                 return BadRequest();
             }
-            _context.Entry(categoria).State = EntityState.Modified;
-            _context.SaveChanges();
+           
+            var categoria = _mapper.Map<Categoria>(categoriaDto);
+
+            _context.CategoriaRepository.Update(categoria);
+            _context.Commit();
+            
             return Ok();
         }
-
+    
         // DELETE api/<CategoriasController>/5
         [HttpDelete("{id}")]
-        public ActionResult<Categoria> Delete(int id)
+        public ActionResult<CategoriaDTO> Delete(int id)
         {
-            var categoria = _context.Categorias.AsNoTracking().FirstOrDefault(c => c.CategoriaId == id);
+            var categoria = _context.CategoriaRepository.GetById(c => c.CategoriaId == id);
   
             if (categoria == null)
             {
                 return NotFound();
             }
-            _context.Categorias.Remove(categoria);
-            _context.SaveChanges();
-            return categoria;
+            _context.CategoriaRepository.Delete(categoria);
+            _context.Commit();
+
+            var categoriaDto = _mapper.Map<CategoriaDTO>(categoria);
+
+            return categoriaDto;
         }
     }
 }
