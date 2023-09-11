@@ -3,6 +3,7 @@ using APICatalogo.Models;
 using APICatalogo.Repository;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -14,7 +15,8 @@ namespace APICatalogo.Controllers
     {
         private readonly IUnityOfWork _context;
         private readonly IMapper _mapper;
-        public CategoriasController(IUnityOfWork context, IMapper mapper)
+        public CategoriasController(IUnityOfWork context, 
+            IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
@@ -22,10 +24,10 @@ namespace APICatalogo.Controllers
         }
 
         [HttpGet("produtos")]
-        public ActionResult<IEnumerable<CategoriaDTO>> GetCategoriasProdutos()
+        public async Task<ActionResult<IEnumerable<CategoriaDTO>>> GetCategoriasProdutos()
         {
-            
-            var categoriaProduto = _context.CategoriaRepository.GetCategoriasProdutos().ToList();
+
+            var categoriaProduto = await _context.CategoriaRepository.GetCategoriasProdutos();
 
             var categoriaProdutoDto = _mapper.Map<List<CategoriaDTO>>(categoriaProduto);
 
@@ -33,9 +35,9 @@ namespace APICatalogo.Controllers
 
         }
         [HttpGet]
-        public ActionResult<IEnumerable<CategoriaDTO>> Get()
+        public async Task<ActionResult<IEnumerable<CategoriaDTO>>> Get()
         {
-            var categorias = _context.CategoriaRepository.Get().ToList();
+            var categorias = await _context.CategoriaRepository.Get().ToListAsync();
 
             var categoriasDTO = _mapper.Map<List<CategoriaDTO>>(categorias);
 
@@ -44,9 +46,9 @@ namespace APICatalogo.Controllers
 
         // GET api/<CategoriasController>/id
         [HttpGet("{id}", Name = "ObterCategoria")]
-        public ActionResult<CategoriaDTO> Get(int id)
+        public async Task<ActionResult<CategoriaDTO>> Get(int id)
         {
-            var categoria = _context.CategoriaRepository.GetById(c => c.CategoriaId == id);
+            var categoria = await _context.CategoriaRepository.GetById(c => c.CategoriaId == id);
             if(categoria == null)
             { 
                 return BadRequest(); 
@@ -58,12 +60,12 @@ namespace APICatalogo.Controllers
 
         // POST api/<CategoriasController>
         [HttpPost]
-        public ActionResult<CategoriaDTO> Post([FromBody] CategoriaDTO categoriaDtoReturn)
+        public async Task<ActionResult<CategoriaDTO>> Post([FromBody] CategoriaDTO categoriaDtoReturn)
         {
             var categoria = _mapper.Map<Categoria>(categoriaDtoReturn);
 
             _context.CategoriaRepository.Add(categoria);
-            _context.Commit();
+            await _context.Commit();
 
             return new CreatedAtRouteResult("ObterCategoria", 
                 new { id = categoria.CategoriaId }, categoriaDtoReturn);
@@ -71,7 +73,7 @@ namespace APICatalogo.Controllers
 
         // PUT api/<CategoriasController>/5
         [HttpPut("{id}")]
-        public ActionResult<Categoria> Put(int id, [FromBody] CategoriaDTO categoriaDto)
+        public async Task<ActionResult<Categoria>> Put(int id, [FromBody] CategoriaDTO categoriaDto)
         {
 
             if (id != categoriaDto.CategoriaId)
@@ -82,23 +84,23 @@ namespace APICatalogo.Controllers
             var categoria = _mapper.Map<Categoria>(categoriaDto);
 
             _context.CategoriaRepository.Update(categoria);
-            _context.Commit();
+            await _context.Commit();
             
             return Ok();
         }
     
         // DELETE api/<CategoriasController>/5
         [HttpDelete("{id}")]
-        public ActionResult<CategoriaDTO> Delete(int id)
+        public async Task<ActionResult<CategoriaDTO>> Delete(int id)
         {
-            var categoria = _context.CategoriaRepository.GetById(c => c.CategoriaId == id);
+            var categoria = await _context.CategoriaRepository.GetById(c => c.CategoriaId == id);
   
             if (categoria == null)
             {
                 return NotFound();
             }
             _context.CategoriaRepository.Delete(categoria);
-            _context.Commit();
+            await _context.Commit();
 
             var categoriaDto = _mapper.Map<CategoriaDTO>(categoria);
 

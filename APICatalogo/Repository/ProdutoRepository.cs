@@ -1,5 +1,6 @@
 ﻿using APICatalogo.Context;
 using APICatalogo.Models;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace APICatalogo.Repository
@@ -9,9 +10,9 @@ namespace APICatalogo.Repository
         public ProdutoRepository(AppDbContext context) : base(context) 
         { 
         }
-        public IEnumerable<Produto> GetProdutosPorPreco()
+        public async Task<IEnumerable<Produto>> GetProdutosPorPreco()
         {
-            return Get().OrderBy(c=>c.Preco).ToList();
+            return await Get().OrderBy(c=>c.Preco).ToListAsync();
         }
     }
 }
