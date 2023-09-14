@@ -1,5 +1,4 @@
 using APICatalogo.Context;
-using APICatalogo.DTOs.Mappings;
 using APICatalogo.Extensions;
 using APICatalogo.Filter;
 using APICatalogo.Logging;
